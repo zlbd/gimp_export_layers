@@ -1,2 +1,2 @@
 # gimp_export_layers
-None
+Export each leaf layer into the image
