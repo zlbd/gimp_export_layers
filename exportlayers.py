@@ -4,12 +4,29 @@
 
 from gimpfu import *
 import os, sys, platform
-#sys.stderr = open('~/temp/gimp_err.txt', 'a')
-#sys.stdout = open('~/temp/gimp_log.txt', 'a')
-
 global s_css
 global s_body
 global s_index
+
+################################################################################
+# define functions
+################################################################################
+
+def init_log():
+    sSlash  = get_slash()
+    sHome   = os.path.expanduser('~')
+    sLogDir = sHome + sSlash + 'gimp_script' + sSlash
+    sLog    = sLogDir + 'el_log.txt'
+    sErr    = sLogDir + 'el_err.txt'
+    if not os.path.exists(sLogDir):
+        os.mkdir(sLogDir)
+    if os.path.exists(sLog):
+        os.remove(sLog)
+    if os.path.exists(sErr):
+        os.remove(sErr)
+    sys.stderr = open(sErr, 'a')
+    sys.stdout = open(sLog, 'a')
+    return
 
 def fwrite(fname, text):
     with open(fname,'w') as f:
@@ -54,20 +71,6 @@ def init_params():
     s_css  = ""
     s_body = ""
     s_index = 10000
-    # init log params
-    sSlash  = get_slash()
-    sHome   = os.path.expanduser('~')
-    sLogDir = sHome + sSlash + 'gimp_script' + sSlash
-    sLog    = sLogDir + 'el_log.txt'
-    sErr    = sLogDir + 'el_err.txt'
-    if not os.path.exists(sLogDir):
-        os.mkdir(sLogDir)
-    if os.path.exists(sLog):
-        os.remove(sLog)
-    if os.path.exists(sErr):
-        os.remove(sErr)
-    sys.stderr = open(sErr, 'a')
-    sys.stdout = open(sLog, 'a')
     return
 
 def get_htmlname(name):
@@ -127,10 +130,7 @@ def walk_groupLayer(layerInput, imgDir):
     layers = layerInput.layers
     return
 
-def export_layers1(tips, img, sDir = ""):
-    pass
- 
-def export_layers(tips, img, sDir = ""):
+def export_layers(img, sDir = ""):
     # do init 
     init_params();
     # test code
@@ -155,6 +155,12 @@ def export_layers(tips, img, sDir = ""):
     gimp.message("Export Path:    \n" + sDir + "    ")
     return
  
+################################################################################
+# call functions
+################################################################################
+
+init_log()
+
 register(
     "python_fu_export_layers",
     "A simple Python-Fu 'Export layers' plug-in    ",
@@ -162,14 +168,13 @@ register(
     "zlbd",
     "zlbd 2018.",
     "2018",
-    "<Image>/Layer/_Export Layers (Py)",
+    "<Toolbox>/Layer/_Export Layers (Py)",
     "RGB*, GRAY*",
     [
-        (PF_STRING, "string", "Text:", "https://www.gimp.org/docs/python")
-        (PF_IMAGE, "image", "Input image", None),
+        (PF_IMAGE,  "image", "Input image", None),
         (PF_DIRNAME, "dir", "Directory", None)
     ],
     [],
-    export_layers1)
+    export_layers)
  
 main()
