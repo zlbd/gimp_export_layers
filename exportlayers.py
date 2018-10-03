@@ -24,39 +24,36 @@ def init_log():
         os.remove(sLog)
     if os.path.exists(sErr):
         os.remove(sErr)
-    sys.stderr = open(sErr, 'a')
     sys.stdout = open(sLog, 'a')
+    sys.stderr = open(sErr, 'a')
     return
 
 def fwrite(fname, text):
     with open(fname,'w') as f:
         f.write(text)
 
-def add_image_to_html(imgname, x, y, w, h):
+def add_image_to_html(imgname, layername, x, y, w, h):
     global s_css
     global s_body
     global s_index
     s_css += '\n\
-    #'+imgname+' {\n\
-        position:absolute;left:'+str(x)+';top:'+str(y)+';width:'+str(w)+';height:'+str(h)+';\n\
-        z-index:'+str(s_index)+';\n\
-    }'
-    s_index -= 1
+        #dv'+str(s_index)+' {\n\
+            position:absolute;\n\
+            left:'+str(x)+'; top:'+str(y)+'; width:'+str(w)+'; height:'+str(h)+';\n\
+            z-index:'+str(s_index)+';\n\
+        }'
     s_body += '\n\
-    <div id="{0}"><img src="img/{1}.png"/></div>'.format(imgname, imgname)
+        <div id="dv{0}"><img src="img/{1}.png"/><!--{2}--></div>'.format(str(s_index), imgname, layername)
+    s_index -= 1
 
 def export_html(htmlDir, htmlName):
     global s_css
     global s_body
-    sHtml = '\
-<html>\n\
-<style type="text/css">\n\
-{0}\n\
-</style>\n\
-<body>\n\
-{1}\n\
-</body>\n\
-</html>'.format(s_css, s_body)
+    sHtml = '<html>\n\
+    <style type="text/css">{0}\n\
+    </style>\n\
+    <body>{1}\n\
+    </body>\n</html>'.format(s_css, s_body)
     sSlash = get_slash()
     if(htmlDir[-1] != sSlash):
         htmlDir += sSlash
@@ -74,8 +71,12 @@ def init_params():
     return
 
 def get_htmlname(name):
-    htmlname = 'index.html'
+    htmlname = ''
     if(name[-4:] == '.psd'):
+        htmlname = name[:-4] + '.html'
+    elif(name[-5:] == '.html'):
+        htmlname = name
+    else:
         htmlname = name[:-4] + '.html'
     return htmlname
 
@@ -87,7 +88,7 @@ def get_slash():
 
 def get_layername(layer):
     layername = layer.name
-    chs=[' ', '\t', '\\', '/', '.']
+    chs=[' ', '\t', '\\', '/', '.', '#']
     for ch in chs:
         layername = layername.replace(ch, '_')
     return layername
@@ -101,12 +102,13 @@ def get_imgpath(basepath):
         os.mkdir(imgpath)
     return imgpath;
 
-def save_layer(fdir, fbasename, layer):
+def save_layer(fdir, layer):
+    fbasename = get_layername(layer)
     x = layer.offsets[0]
     y = layer.offsets[1]
     w = layer.width
     h = layer.height
-    add_image_to_html(fbasename, x, y, w, h)
+    add_image_to_html(fbasename, layer.name, x, y, w, h)
     pdb.gimp_edit_copy(layer)
     newimage = pdb.gimp_edit_paste_as_new()
     drawable = newimage.layers[0]
@@ -123,36 +125,34 @@ def walk_groupLayer(layerInput, imgDir):
         if(layer.__class__ == gimp.GroupLayer):
             walk_groupLayer(layer, imgDir)
         elif(layer.__class__ == gimp.Layer):
-            layername = get_layername(layer)
-            save_layer(imgDir, layername, layer)
+            save_layer(imgDir, layer)
         else:
             print("[Error]: "+layer.name)
     layers = layerInput.layers
     return
 
-def export_layers(img, sDir = ""):
+def export_layers(sDir, img):
     # do init 
     init_params();
-    # test code
-    print("hello world")
-    img = gimp.image_list()[0]
-    sDir = "/home/zhaolong/temp/"
     # protect code
     if( img == None ):
         gimp.message("[Error] Image None    \nPlease open a psd file...    ")
         return
     # get base path
-    if( sDir == "" ):
+    if( sDir == "" or sDir == None ):
         sDir = os.path.dirname(img.filename)
+    #if( sName == "" or sName == None ):
+    #    sName  = os.path.basename(img.filename)
+    ##Export file name, using PSD name by default.
+    sName  = os.path.basename(img.filename)
     imgDir = get_imgpath(sDir)
     # use img as GroupLayer to export
     walk_groupLayer(img, imgDir)
     # save html 
-    psdName = os.path.basename(img.filename)
-    sHtml = get_htmlname(psdName)
+    sHtml = get_htmlname(sName)
     export_html(sDir, sHtml)
     # show result path
-    gimp.message("Export Path:    \n" + sDir + "    ")
+    gimp.message("Export Path:\n"+sDir+"\n\nExport Name:\n"+sHtml)
     return
  
 ################################################################################
@@ -163,16 +163,16 @@ init_log()
 
 register(
     "python_fu_export_layers",
-    "A simple Python-Fu 'Export layers' plug-in    ",
+    "A simple Python-Fu 'Export layers' plug-in.\n(Export file name, using PSD name by default.)",
     "When run this plug-in, export layers for PSD. ",
     "zlbd",
     "zlbd 2018.",
     "2018",
-    "<Toolbox>/Layer/_Export Layers (Py)",
+    "<Toolbox>/Layer/_Export Layers(Py)",
     "RGB*, GRAY*",
     [
-        (PF_IMAGE,  "image", "Input image", None),
-        (PF_DIRNAME, "dir", "Directory", None)
+        (PF_DIRNAME, "dir",    "Export Path",  None),
+        (PF_IMAGE,   "image",  "Input Image",  None),
     ],
     [],
     export_layers)
