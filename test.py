@@ -15,7 +15,7 @@ register(
   "",
   "",
   "",
-  "<Toolbox>/Layer/_Echo",
+  "<Toolbox>/Layer/_Test Echo",
   "",
   [
   (PF_STRING, "arg0", "argument 0", "test string"),

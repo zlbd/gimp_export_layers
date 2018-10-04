@@ -128,7 +128,6 @@ def walk_groupLayer(layerInput, imgDir):
             save_layer(imgDir, layer)
         else:
             print("[Error]: "+layer.name)
-    layers = layerInput.layers
     return
 
 def export_layers(sDir, img):
@@ -151,8 +150,8 @@ def export_layers(sDir, img):
     # save html 
     sHtml = get_htmlname(sName)
     export_html(sDir, sHtml)
-    # show result path
-    gimp.message("Export Path:\n"+sDir+"\n\nExport Name:\n"+sHtml)
+    ## show result path
+    #gimp.message("Export Path:\n"+sDir+"\n\nExport Name:\n"+sHtml)
     return
  
 ################################################################################
