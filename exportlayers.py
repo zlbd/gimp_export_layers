@@ -100,13 +100,21 @@ def get_imgpath(basepath):
         os.mkdir(imgpath)
     return imgpath;
 
+def isBmp8Bit():
+    global s_isBmp8Bit
+    return s_isBmp8Bit
+
 def getImageFmt():
     global s_Fmt
     return s_Fmt
 
-
 def setImageFmt(sFmt):
     global s_Fmt
+    global s_isBmp8Bit
+    s_isBmp8Bit = False
+    if(sFmt == "bmp_8"):
+        sFmt = "bmp"
+        s_isBmp8Bit = True
     s_Fmt = sFmt
     return
 
@@ -123,6 +131,13 @@ def save_layer(fdir, layer):
     fname = fdir + fbasename + '.' + getImageFmt()
     pdb.gimp_file_save(newimage, drawable, fname, fname)
     pdb.gimp_image_delete(newimage)
+    if(isBmp8Bit()):
+        try:
+            from PIL import Imagex
+            im = Image.open(fname)
+            im.convert("P").save(fname)
+        except ImportError:
+            gimp.message("[Error] Pillow not found, image will be exported as 24-bit BMP")
     return
 
 def walk_groupLayer(layerInput, imgDir):
@@ -137,7 +152,6 @@ def walk_groupLayer(layerInput, imgDir):
         else:
             print("[Error]: "+layer.name)
     return
-
 
 def export_layers(sDir, sFmt, img):
     # do init 
@@ -162,6 +176,7 @@ def export_layers(sDir, sFmt, img):
     export_html(sDir, sHtml)
     ## show result path
     #gimp.message("Export Path:\n"+sDir+"\n\nExport Name:\n"+sHtml)
+    #(PF_RADIO,   "fmt", "Export Format", "png", (("png", "png"), ("bmp(32-bit)", "bmp"), ("bmp(8-bit)", "bmp_8"))),
     return
  
 ################################################################################
@@ -181,7 +196,7 @@ register(
     "RGB*, GRAY*",
     [
         (PF_DIRNAME, "dir", "Export Path",  None),
-        (PF_RADIO,   "fmt", "Export Format", "png", (("png", "png"), ("bmp", "bmp"))),
+        (PF_RADIO,   "fmt", "Export Format", "png", (("png", "png"), ("bmp(32-bit)", "bmp"))),
         (PF_IMAGE,   "img", "Input Image",  None),
     ],
     [],
