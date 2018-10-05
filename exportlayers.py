@@ -4,9 +4,6 @@
 
 from gimpfu import *
 import os, sys, platform
-global s_css
-global s_body
-global s_index
 
 ################################################################################
 # define functions
@@ -36,6 +33,7 @@ def add_image_to_html(imgname, layername, x, y, w, h):
     global s_css
     global s_body
     global s_index
+    sFmt = getImageFmt()
     s_css += '\n\
         #dv'+str(s_index)+' {\n\
             position:absolute;\n\
@@ -43,7 +41,7 @@ def add_image_to_html(imgname, layername, x, y, w, h):
             z-index:'+str(s_index)+';\n\
         }'
     s_body += '\n\
-        <div id="dv{0}"><img src="img/{1}.png"/><!--{2}--></div>'.format(str(s_index), imgname, layername)
+        <div id="dv{0}"><img src="img/{1}.{2}"/><!--{3}--></div>'.format(str(s_index), imgname, sFmt, layername)
     s_index -= 1
 
 def export_html(htmlDir, htmlName):
@@ -102,6 +100,16 @@ def get_imgpath(basepath):
         os.mkdir(imgpath)
     return imgpath;
 
+def getImageFmt():
+    global s_Fmt
+    return s_Fmt
+
+
+def setImageFmt(sFmt):
+    global s_Fmt
+    s_Fmt = sFmt
+    return
+
 def save_layer(fdir, layer):
     fbasename = get_layername(layer)
     x = layer.offsets[0]
@@ -112,7 +120,7 @@ def save_layer(fdir, layer):
     pdb.gimp_edit_copy(layer)
     newimage = pdb.gimp_edit_paste_as_new()
     drawable = newimage.layers[0]
-    fname = fdir + fbasename + '.png'
+    fname = fdir + fbasename + '.' + getImageFmt()
     pdb.gimp_file_save(newimage, drawable, fname, fname)
     pdb.gimp_image_delete(newimage)
     return
@@ -130,8 +138,11 @@ def walk_groupLayer(layerInput, imgDir):
             print("[Error]: "+layer.name)
     return
 
-def export_layers(sDir, img):
+
+def export_layers(sDir, sFmt, img):
     # do init 
+    #gimp.message(sFmt)
+    setImageFmt(sFmt)
     init_params();
     # protect code
     if( img == None ):
@@ -170,8 +181,9 @@ register(
     "<Toolbox>/Layer/_Export Layers(Py)",
     "RGB*, GRAY*",
     [
-        (PF_DIRNAME, "dir",    "Export Path",  None),
-        (PF_IMAGE,   "image",  "Input Image",  None),
+        (PF_DIRNAME, "dir", "Export Path",  None),
+        (PF_RADIO,   "fmt", "Export Format", "png", (("png", "png"), ("bmp", "bmp"))),
+        (PF_IMAGE,   "img", "Input Image",  None),
     ],
     [],
     export_layers)
