@@ -141,9 +141,8 @@ def walk_groupLayer(layerInput, imgDir):
 
 def export_layers(sDir, sFmt, img):
     # do init 
-    #gimp.message(sFmt)
+    init_params()
     setImageFmt(sFmt)
-    init_params();
     # protect code
     if( img == None ):
         gimp.message("[Error] Image None    \nPlease open a psd file...    ")
