@@ -1,5 +1,6 @@
 .idea/
 img/
+img*/
 \.*.un~
 *.html
 .
