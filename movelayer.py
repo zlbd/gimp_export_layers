@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# A template for gimp python-fu script
+# Move layer selected
 # Author: zlbd
 
 from gimpfu import *
@@ -64,7 +64,7 @@ def walk_groupLayer(layerInput, func, param):
             print("[Error] layer class is wrong: "+layer.name)
     return False
 
-def main_template(sDir, sFmt, img):
+def main_move_layer(sDir, sFmt, img, x, y, w, h):
     #### protect code
     if( img == None ):
         gimp.message("[Error] Image None    \nPlease open a psd file...    ")
@@ -75,9 +75,14 @@ def main_template(sDir, sFmt, img):
     #img = gimp.image_list()[0]
     layer = img.active_layer
     rect = layer.offsets[0], layer.offsets[1], layer.width, layer.height
-    gimp.message("Template run OK!" + "\n" 
-            + "The rectangle of layer selected:" + "\n\n" 
-            + str(rect))
+    x = x if (x != -1) else layer.offsets[0]
+    y = y if (y != -1) else layer.offsets[1]
+    w = w if (w != -1) else layer.width
+    h = h if (h != -1) else layer.height
+    layer.set_offsets(x, y)
+    #layer.scale(w, h)
+    gimp.message("move_layer run OK!" + "\n\n" 
+            + str(rect) + " => " + str((x, y, w, h)))
     return
  
 ################################################################################
@@ -85,20 +90,24 @@ def main_template(sDir, sFmt, img):
 ################################################################################
 init_log()
 register(
-    "python_fu_template",
-    "A simple Python-Fu 'template' plug-in.",
+    "python_fu_move_layer",
+    "A simple Python-Fu 'move_layer' plug-in.",
     "When run this plug-in, show 'Test OK' message.",
     "zlbd",
     "zlbd 2018.",
     "2018",
-    "<Toolbox>/Layer/_Template(Py)",
+    "<Toolbox>/Layer/_Move Layer (Py)",
     "RGB*, GRAY*",
     [
         (PF_DIRNAME, "string", "Directory",     None),
         (PF_RADIO,   "format", "Image Format",  "png", (("png", "png"), ("bmp(32-bit)", "bmp"))),
         (PF_IMAGE,   "image",  "Input Sselect", None),
+        (PF_INT,     "integer", "Input x",      -1),
+        (PF_INT,     "integer", "Input y",      -1),
+        (PF_INT,     "integer", "Input w",      -1),
+        (PF_INT,     "integer", "Input h",      -1),
     ],
     [],
-    main_template)
+    main_move_layer)
  
 main()
