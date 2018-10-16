@@ -79,8 +79,9 @@ def main_move_layer(sDir, sFmt, img, x, y, w, h):
     y = y if (y != -1) else layer.offsets[1]
     w = w if (w != -1) else layer.width
     h = h if (h != -1) else layer.height
+    layer.visible = True
     layer.set_offsets(x, y)
-    #layer.scale(w, h)
+    layer.scale(w, h)
     gimp.message("move_layer run OK!" + "\n\n" 
             + str(rect) + " => " + str((x, y, w, h)))
     return
