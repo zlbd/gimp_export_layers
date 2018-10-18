@@ -58,28 +58,21 @@ def get_slash():
         ch='\\'
     return ch;
 
-def move_layer_to_next(tips, img, x, y, w, h):
+def move_layer_to_next(tips, img):
     # protect code
     if( img == None ):
         gimp.message("[Error] Image None    \nPlease open a psd file...    ")
         return
     #img = gimp.image_list()[0]
     selLayer = img.active_layer
-    if(x==-1 and y==-1):
-        nextLayer = walk_find_next_layer(img, selLayer)
-        if(nextLayer == None):
-            gimp.message("[Erro] The next layer of the current image is not found!")
-        else:
-            selLayer.visible = True
-            nextLayer.visible = True
-            selLayer.set_offsets(nextLayer.offsets[0], nextLayer.offsets[1])
-            selLayer.scale(nextLayer.width, nextLayer.height)
+    nextLayer = walk_find_next_layer(img, selLayer)
+    if(nextLayer == None):
+        gimp.message("[Erro] The next layer of the current image is not found!")
     else:
         selLayer.visible = True
-        selLayer.set_offsets(x, y)
-
-    if(w!=-1 and h!=-1):
-        selLayer.scale(w, h)
+        nextLayer.visible = True
+        selLayer.set_offsets(nextLayer.offsets[0], nextLayer.offsets[1])
+        selLayer.scale(nextLayer.width, nextLayer.height)
 
     return 0
  
@@ -99,12 +92,8 @@ register(
     "<Toolbox>/Layer/_Move Layer To Next(Py)",
     "RGB*, GRAY*",
     [
-        (PF_DIRNAME, "tips",    "tips",         "Please click ok to continue..."),
-        (PF_IMAGE,   "img",     "Input Image",  None),
-        (PF_INT,     "x",       "Input x",      -1),
-        (PF_INT,     "y",       "Input y",      -1),
-        (PF_INT,     "w",       "Input w",      -1),
-        (PF_INT,     "h",       "Input h",      -1),
+        (PF_STRING,  "tips",    "tips",         "Please click ok to continue..."),
+        (PF_IMAGE,   "img",     "Input Image",  None)
     ],
     [],
     move_layer_to_next)
