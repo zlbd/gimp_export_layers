@@ -22,7 +22,7 @@ def init_log():
         os.remove(sErr)
     sys.stdout = open(sLog, 'a')
     sys.stderr = open(sErr, 'a')
-    return
+    return sHome
 
 def fwrite(fname, text):
     with open(fname,'w') as f:
@@ -58,7 +58,7 @@ def walk_groupLayer(layerInput, cb, params_outside):
             if(walk_groupLayer(layer, cb, params_outside)):
                 return True
         elif(layer.__class__ == gimp.Layer):
-            params_walk = [layers, i, layerInput]
+            params_walk = layers, i
             if(cb(layer, params_outside, params_walk)):
                 return True
         else:
@@ -68,27 +68,26 @@ def walk_groupLayer(layerInput, cb, params_outside):
 def set_layer_rect(layer, rect):
     x, y, w, h = rect
     layer.set_offsets(x, y)
-    layer.scale(w, h)
+    #layer.scale(w, h)
 
 def replace_picture(layer, params_outside, params_walk):
     sDir, sFmt, img = params_outside
-    layers, index, layerParent = params_walk
+    layers, index = params_walk
     fName = sDir + layer.name + "." + sFmt
     if not os.path.exists(fName):
         return False
     # load image as new layer
     newlayer = pdb.gimp_file_load_layer(img, fName)
-    if(layerParent == img):
-        layerParent = 0
-    pdb.gimp_image_set_active_layer(img, layer)
-    pdb.gimp_image_insert_layer(img, newlayer, None, -1)
-    # move new layer
-    rect = layer.offsets[0], layer.offsets[1], layer.width, layer.height
-    set_layer_rect(newlayer, rect)
-    # merge down
-    layer.visible = True
-    newlayer.visible = True
-    layer = pdb.gimp_image_merge_down(img, newlayer, 0)
+    if(newlayer.width == layer.width and newlayer.height == layer.height):
+        pdb.gimp_image_set_active_layer(img, layer)
+        pdb.gimp_image_insert_layer(img, newlayer, None, -1)
+        # move new layer
+        rect = layer.offsets[0], layer.offsets[1], layer.width, layer.height
+        set_layer_rect(newlayer, rect)
+        # merge down
+        layer.visible = True
+        newlayer.visible = True
+        layer = pdb.gimp_image_merge_down(img, newlayer, 0)
     return False
 
 
@@ -116,7 +115,10 @@ def main_replace_pictures(sDir, sFmt, img):
 ################################################################################
 # call function
 ################################################################################
-init_log()
+global s_sHome
+s_sHome = init_log()
+
+
 register(
     "python_fu_replace_pictures",
     "A simple Python-Fu 'replace_pictures' plug-in.",
@@ -127,8 +129,8 @@ register(
     "<Toolbox>/Layer/_Replace Pictures (Py)",
     "RGB*, GRAY*",
     [
-        (PF_DIRNAME, "string", "Directory",     None),
-        (PF_RADIO,   "format", "Image Format",  "png", (("png", "png"), ("bmp(32-bit)", "bmp"))),
+        (PF_DIRNAME, "string", "Directory",     s_sHome),
+        (PF_RADIO,   "format", "Image Format",  "bmp", (("png", "png"), ("bmp(32-bit)", "bmp"))),
         (PF_IMAGE,   "image",  "Input Sselect", None),
     ],
     [],

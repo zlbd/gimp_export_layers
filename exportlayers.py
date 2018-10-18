@@ -23,7 +23,7 @@ def init_log():
         os.remove(sErr)
     sys.stdout = open(sLog, 'a')
     sys.stderr = open(sErr, 'a')
-    return
+    return sHome
 
 def fwrite(fname, text):
     with open(fname,'w') as f:
@@ -40,8 +40,10 @@ def add_image_to_html(imgname, layername, x, y, w, h):
             left:'+str(x)+'; top:'+str(y)+'; width:'+str(w)+'; height:'+str(h)+';\n\
             z-index:'+str(s_index)+';\n\
         }'
+    sRect = '('+str(x)+', '+str(y)+', '+str(w)+', '+str(h)+')'
     s_body += '\n\
-        <div id="dv{0}"><img src="img/{1}.{2}"/><!--{3}--></div>'.format(str(s_index), imgname, sFmt, layername)
+        <div id="dv{0}"><img src="img/{1}.{2}"/><!--{3}{4}--></div>'.format(
+                str(s_index), imgname, sFmt, layername, sRect)
     s_index -= 1
 
 def export_html(htmlDir, htmlName):
@@ -182,8 +184,8 @@ def export_layers(sDir, sFmt, img):
 ################################################################################
 # call functions
 ################################################################################
-
-init_log()
+global s_sHome
+s_sHome = init_log()
 
 register(
     "python_fu_export_layers",
