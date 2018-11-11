@@ -13,10 +13,12 @@ import os, sys, platform
 ################################################################################
 # define function
 ################################################################################
+global s_Home
 def init_log():
+    global s_Home
     sSlash  = get_slash()
-    sHome   = os.path.expanduser('~')
-    sLogDir = sHome + sSlash + 'gimp_script' + sSlash
+    s_Home   = os.path.expanduser('~')
+    sLogDir = s_Home + sSlash + 'gimp_script' + sSlash
     sLog    = sLogDir + 'el_log.txt'
     sErr    = sLogDir + 'el_err.txt'
     if not os.path.exists(sLogDir):
@@ -99,7 +101,7 @@ register(
     "<Toolbox>/Layer/_Template(Py)",
     "RGB*, GRAY*",
     [
-        (PF_DIRNAME, "string", "Directory",     None),
+        (PF_DIRNAME, "string", "Directory",     s_Home),
         (PF_RADIO,   "format", "Image Format",  "png", (("png", "png"), ("bmp(32-bit)", "bmp"))),
         (PF_IMAGE,   "image",  "Input Sselect", None),
     ],
